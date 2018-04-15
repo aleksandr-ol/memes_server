@@ -1,0 +1,4 @@
+.idea/
+static/*/*.*
+settings.py
+static/vk_config.v2.json
