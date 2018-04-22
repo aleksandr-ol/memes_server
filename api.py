@@ -1,11 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import json
+import settings
 
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'secret'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:@127.0.0.1:3306/memes'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://' + settings.db_user + ':' + settings.db_pass + '@' +\
+                                        settings.db_host + ':3306/' + settings.db_name
 
 db = SQLAlchemy(app)
 
