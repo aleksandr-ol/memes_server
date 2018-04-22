@@ -13,13 +13,13 @@ db = SQLAlchemy(app)
 
 
 class Parsed_posts(db.Model):
-    id = db.Column(db.String, primary_key=True)
-    text = db.Column(db.String)
+    id = db.Column(db.String(80), primary_key=True)
+    text = db.Column(db.String(80))
     likes = db.Column(db.Integer)
     reposts = db.Column(db.Integer)
     group_id = db.Column(db.Integer)
     date = db.Column(db.Integer)
-    attachments = db.Column(db.String)
+    attachments = db.Column(db.String(80))
 
 
 @app.route('/mems/offset=<offset>', methods=['GET'])
