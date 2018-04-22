@@ -74,7 +74,7 @@ def process_posts_data(posts, group_dir):
 
 # записуємо нові пости в БД
 def write_into_db(posts_data):
-    connection = pymysql.connect(user="root", passwd="", host="127.0.0.1", port=3306, database="memes",
+    connection = pymysql.connect(user=settings.db_user, passwd=settings.db_pass, host=settings.db_host, port=3306, database=settings.db_name,
                                  charset='utf8mb4',
                                  cursorclass=pymysql.cursors.DictCursor)
     try:
