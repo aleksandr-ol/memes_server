@@ -102,14 +102,14 @@ def make_directory(path, name):
     return full_path
 
 
-if __name__ == '__main__':
-    vk_session = vk_login()
+# if __name__ == '__main__':
+vk_session = vk_login()
 
-    forch_dir = make_directory(os.path.curdir, "-45745333")  # створення каталогу для форча
+forch_dir = make_directory(os.path.curdir, "-45745333")  # створення каталогу для форча
 
-    get_posts(vk_session.get_api())
+get_posts(vk_session.get_api())
 
-    with open('posts.json', 'r', encoding='utf-8') as f:
-        posts = json.load(f)
-    posts_data = process_posts_data(posts, forch_dir)
-    write_into_db(posts_data)
+with open('posts.json', 'r', encoding='utf-8') as f:
+    posts = json.load(f)
+posts_data = process_posts_data(posts, forch_dir)
+write_into_db(posts_data)
