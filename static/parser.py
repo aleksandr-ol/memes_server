@@ -4,6 +4,10 @@ import vk_api
 import json
 import requests
 import os
+
+import sys
+sys.path.append('/home/coolmemes/memes_server/')
+
 import settings
 
 
