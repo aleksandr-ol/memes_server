@@ -2,7 +2,7 @@
 import pymysql
 import vk_api
 import json
-import httplib2
+import requests
 import os
 import settings
 
@@ -31,10 +31,9 @@ def get_posts(api):  # отримання постів у форматі json
 
 
 def download_photo(url, path):
-    h = httplib2.Http('.cache')
-    response, content = h.request(url)
+    p = requests.get(url)
     out = open(path, 'wb')
-    out.write(content)
+    out.write(p.content)
     out.close()
 
 
