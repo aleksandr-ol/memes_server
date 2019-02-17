@@ -1,14 +1,13 @@
 #!c:\python36\python
-import pymysql
+# import pymysql # для БД
 import vk_api
 import json
 import requests
 import os
-
-import sys
-sys.path.append('/home/coolmemes/memes_server/')
-
 import settings
+
+# import sys
+# sys.path.append('/home/coolmemes/memes_server/')
 
 
 def captcha_handler(captcha):
@@ -19,7 +18,8 @@ def captcha_handler(captcha):
 
 
 def vk_login():
-    vk_session = vk_api.VkApi(settings.vk_uesrname, settings.vk_password, captcha_handler=captcha_handler, scope=settings.vk_scope)
+    vk_session = vk_api.VkApi(settings.vk_username, settings.vk_password, captcha_handler=captcha_handler,
+                              scope=settings.vk_scope)
     try:
         vk_session.auth()
     except vk_api.AuthError as error_msg:
@@ -28,10 +28,15 @@ def vk_login():
     return vk_session
 
 
-def get_posts(api):  # отримання постів у форматі json
-    posts = api.wall.get(owner_id="-45745333", offset=1, count=100, filter="owner")
+def get_posts(api, iteration, owner_id):  # отримання постів у форматі json
+    offset = 1 + iteration*100
+    posts = api.wall.get(owner_id="-45745333", offset=offset, count=100, filter="owner")
+    return posts
+
+
+def write_json_to_file(json_data):
     with open('posts.json', 'w', encoding='utf-8') as file:
-        json.dump(posts, file, indent=2, ensure_ascii=False)
+        json.dump(json_data, file, indent=2, ensure_ascii=False)
 
 
 def download_photo(url, path):
@@ -48,6 +53,7 @@ def process_posts_data(posts, group_dir):
     i = 0
     for post in posts['items']:
         if 'copy_history' not in post:
+
             posts_data.append({'owner_id': abs(int(post['owner_id'])),
                                'post_id': str(abs(int(post['owner_id']))) + '_' + str(post['id']),
                                'date': int(post['date']),
@@ -57,13 +63,20 @@ def process_posts_data(posts, group_dir):
                                'attachments': ""
                                }
                               )
+
             attachments = []
             if 'attachments' in post:
                 for attachment in post['attachments']:
                     if attachment['type'] == 'photo':
                         photo_path = os.path.join(group_dir,
                                         str(posts_data[i]['post_id']) + '_' + str(attachment['photo']['id']) + '.jpg')
-                        download_photo(url=attachment['photo']['photo_604'], path=photo_path)
+
+                        for size in attachment['photo']['sizes']:
+                            if size['type'] == 'y':
+                                photo_url = size['url']
+
+                        download_photo(url=photo_url, path=photo_path)
+
                         photo_path = 'static/' + group_dir[2:] + '/' + \
                                      str(posts_data[i]['post_id']) + '_' + str(attachment['photo']['id']) + '.jpg'
 
@@ -105,14 +118,24 @@ def make_directory(path, name):
     return full_path
 
 
-# if __name__ == '__main__':
-vk_session = vk_login()
+if __name__ == '__main__':
 
-forch_dir = make_directory(os.path.curdir, "-45745333")  # створення каталогу для форча
+    print('Введите id групы с которой будем парсить')
+    group_id = input()
+    print('Введите количество проходов(по 100 постов). Целое число!')
+    count_of_iterations = int(input())
 
-get_posts(vk_session.get_api())
+    vk_session = vk_login()
 
-with open('posts.json', 'r', encoding='utf-8') as f:
-    posts = json.load(f)
-posts_data = process_posts_data(posts, forch_dir)
-write_into_db(posts_data)
+    group_dir = make_directory(os.path.curdir, group_id)  # створення каталогу для форча -45745333
+
+    posts_json = get_posts(vk_session.get_api(), 0, group_id)
+    for i in range(1, count_of_iterations-1):
+        posts_json['items'].extend(get_posts(vk_session.get_api(), i, group_id)['items'])
+
+    write_json_to_file(posts_json)
+
+    with open('posts.json', 'r', encoding='utf-8') as f:
+        posts = json.load(f)
+    posts_data = process_posts_data(posts, group_dir)
+    #write_into_db(posts_data)
